@@ -123,11 +123,43 @@ function render() {
   renderReview(missed, progress);
 }
 
-resetBtn.addEventListener("click", function () {
-  if (confirm("Reset all your progress? This can't be undone.")) {
-    PW.resetProgress();
-    render();
-  }
+exportBtn.addEventListener("click", function () {
+  const blob = new Blob([PW.exportProgress()], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  const today = new Date().toISOString().slice(0, 10);
+  link.href = url;
+  link.download = "viwel-progress-" + today + ".txt";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  saveStatus.textContent = "Progress saved to your downloads as " + link.download + ".";
+});
+
+importBtn.addEventListener("click", function () {
+  importFile.click();
+});
+
+importFile.addEventListener("change", function () {
+  const file = importFile.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function () {
+    const result = PW.importProgress(String(reader.result));
+    if (result.ok) {
+      saveStatus.textContent = "Progress loaded!";
+      render();
+    } else {
+      saveStatus.textContent = result.error;
+    }
+    importFile.value = "";
+  };
+  reader.onerror = function () {
+    saveStatus.textContent = "Couldn't read that file. Please try again.";
+    importFile.value = "";
+  };
+  reader.readAsText(file);
 });
 
 render();
