@@ -1,5 +1,8 @@
 const statsEl = document.getElementById("stats");
-const resetBtn = document.getElementById("reset");
+const exportBtn = document.getElementById("export-progress");
+const importBtn = document.getElementById("import-progress");
+const importFile = document.getElementById("import-file");
+const saveStatus = document.getElementById("save-status");
 
 function makeStat(value, label) {
   const box = document.createElement("div");
