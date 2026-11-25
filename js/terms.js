@@ -3,14 +3,26 @@ const listEl = document.getElementById("terms-list");
 function renderTerms() {
   const progress = PW.loadProgress();
   const all = PW.allEntries();
-  const solved = PW.countSolved(all);
+  const unlocked = all.filter(function (e) { return progress.solved[e.id]; });
+  const missed = all.filter(function (e) { return !progress.solved[e.id] && progress.misses[e.id]; });
+  const locked = all.length - unlocked.length - missed.length;
 
   document.getElementById("terms-title").textContent = BRANCH.name;
   document.getElementById("terms-note").textContent =
-    all.length + " terms and their definitions. " + solved + " solved so far.";
+    unlocked.length + " of " + all.length + " terms unlocked · " +
+    missed.length + " missed · " + locked + " still locked. Play to unlock more.";
 
   listEl.innerHTML = "";
-  all.forEach(function (entry) {
+
+  if (unlocked.length + missed.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "term-card";
+    empty.textContent = "Nothing here yet. Terms you solve or miss will show up here.";
+    listEl.appendChild(empty);
+    return;
+  }
+
+  function addCard(entry, badgeClass, badgeText) {
     const card = document.createElement("div");
     card.className = "term-card";
 
@@ -20,26 +32,18 @@ function renderTerms() {
     const name = document.createElement("h2");
     name.className = "term-name";
     name.textContent = entry.term;
-    head.appendChild(name);
 
     const badge = document.createElement("span");
-    if (progress.solved[entry.id]) {
-      badge.className = "term-badge solved";
-      badge.textContent = "Solved";
-      head.appendChild(badge);
-    } else if (progress.misses[entry.id]) {
-      badge.className = "term-badge review";
-      badge.textContent = "Review";
-      head.appendChild(badge);
-    }
+    badge.className = "term-badge " + badgeClass;
+    badge.textContent = badgeText;
 
-    const def = document.createElement("p");
-    def.className = "term-def";
-    def.textContent = entry.def;
-
-    card.append(head, def);
+    head.append(name, badge);
+    card.appendChild(head);
     listEl.appendChild(card);
-  });
+  }
+
+  unlocked.forEach(function (entry) { addCard(entry, "solved", "Unlocked"); });
+  missed.forEach(function (entry) { addCard(entry, "review", "Missed"); });
 }
 
 renderTerms();
