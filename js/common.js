@@ -212,3 +212,20 @@ const PW = (function () {
     reviewList: reviewList
   };
 })();
+
+// No highlighting, copying or searching the page.
+(function () {
+  function stop(e) { e.preventDefault(); }
+  document.addEventListener("selectstart", stop);
+  document.addEventListener("copy", stop);
+  document.addEventListener("cut", stop);
+  document.addEventListener("dragstart", stop);
+  document.addEventListener("contextmenu", stop);
+  document.addEventListener("keydown", function (e) {
+    const key = e.key.toLowerCase();
+    if ((e.ctrlKey || e.metaKey) && (key === "f" || key === "a" || key === "c" || key === "g")) {
+      e.preventDefault();
+    }
+    if (e.key === "F3") e.preventDefault();
+  });
+})();
