@@ -128,11 +128,58 @@ const PW = (function () {
     return p;
   }
 
-  function resetProgress() {
+    // Turns the saved progress into the text of a .txt file.
+  function exportProgress() {
+    return "VIWEL progress file (v1)\n" +
+      "Saved: " + new Date().toLocaleString() + "\n" +
+      "Keep this file safe. Load it on the Dashboard to continue where you left off.\n\n" +
+      JSON.stringify(loadProgress(), null, 2) + "\n";
+  }
+
+  function isPlainObject(v) {
+    return v !== null && typeof v === "object" && !Array.isArray(v);
+  }
+
+  function maxNumber(a, b) {
+    return Math.max(Number(a) || 0, Number(b) || 0);
+  }
+
+  // Reads the text of a progress .txt file and merges it into this browser's progress.
+  // Merging (not replacing) means loading an old file never erases newer progress,
+  // and never gives back rounds that were already played today.
+  function importProgress(text) {
+    let incoming;
     try {
-      localStorage.removeItem(STORAGE_KEY);
+      const start = text.indexOf("{");
+      const end = text.lastIndexOf("}");
+      incoming = JSON.parse(text.slice(start, end + 1));
     } catch (e) {
+      return { ok: false, error: "That doesn't look like a VIWEL progress file." };
     }
+    if (!isPlainObject(incoming) || !isPlainObject(incoming.solved) ||
+        !isPlainObject(incoming.misses) || !isPlainObject(incoming.days)) {
+      return { ok: false, error: "That doesn't look like a VIWEL progress file." };
+    }
+
+    const p = loadProgress();
+
+    Object.keys(incoming.solved).forEach(function (id) {
+      if (incoming.solved[id]) p.solved[id] = true;
+    });
+    Object.keys(incoming.misses).forEach(function (id) {
+      p.misses[id] = maxNumber(p.misses[id], incoming.misses[id]);
+    });
+    Object.keys(incoming.days).forEach(function (day) {
+      p.days[day] = maxNumber(p.days[day], incoming.days[day]);
+    });
+    p.best = maxNumber(p.best, incoming.best);
+    p.bestDayStreak = maxNumber(p.bestDayStreak, incoming.bestDayStreak);
+    p.streak = maxNumber(p.streak, incoming.streak);
+    if (p.streak > p.best) p.best = p.streak;
+    p.bestDayStreak = maxNumber(p.bestDayStreak, dayStreak(p));
+
+    saveProgress(p);
+    return { ok: true };
   }
 
   function countSolved(list) {
@@ -154,7 +201,8 @@ const PW = (function () {
     entries: entries,
     loadProgress: loadProgress,
     recordResult: recordResult,
-    resetProgress: resetProgress,
+    exportProgress: exportProgress,
+    importProgress: importProgress,
     DAILY_LIMIT: DAILY_LIMIT,
     roundsToday: roundsToday,
     roundsLeftToday: roundsLeftToday,
