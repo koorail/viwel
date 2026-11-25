@@ -74,7 +74,7 @@ function renderReview(missed, progress) {
 
   reviewEl.innerHTML = "";
   if (missed.length === 0) {
-    noteEl.textContent = "Nothing to review yet. Words you miss will show up here with their definitions.";
+    noteEl.textContent = "Nothing to review yet. Words you miss will show up here.";
     return;
   }
   noteEl.textContent = missed.length + (missed.length === 1 ? " word" : " words") +
@@ -93,11 +93,7 @@ function renderReview(missed, progress) {
     const times = progress.misses[entry.id];
     meta.textContent = "Missed " + times + (times === 1 ? " time" : " times");
 
-    const def = document.createElement("div");
-    def.className = "review-def";
-    def.textContent = entry.def;
-
-    item.append(term, meta, def);
+    item.append(term, meta);
     reviewEl.appendChild(item);
   });
 }
