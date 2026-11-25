@@ -33,7 +33,17 @@
       <p class="sub" id="review-note"></p>
       <div class="review-list" id="review-list"></div>
 
-      <button class="link-btn" id="reset">Reset my progress</button>
+    <h2 class="section-title">Save your progress</h2>
+      <p class="sub">
+        Download your progress as a .txt file. Load it here later to continue,
+        even on another device or browser.
+      </p>
+      <div class="actions">
+        <button class="btn secondary" id="export-progress" type="button">Export progress (.txt)</button>
+        <button class="btn secondary" id="import-progress" type="button">Load progress (.txt)</button>
+      </div>
+      <input type="file" id="import-file" accept=".txt,text/plain" hidden />
+      <p class="sub" id="save-status" role="status"></p>
     </div>
     <script src="data/words.js"></script>
     <script src="js/common.js"></script>
